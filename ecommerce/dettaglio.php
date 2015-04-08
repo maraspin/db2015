@@ -51,9 +51,14 @@ $redis->publish("visitatori", "qualcuno sta guardando l'oggetto ". $item['nome']
 
 // Qui utilizziamo un sorted set di Redis per aggiornare le visite di questo prodotto in classifica
 
-$redis->zincrby('popular', 1, $item['id']);
-$item['visite'] = $redis->zscore('popular', $item['id']);
+// Sostituire XXX con l'operazione che incrementa di 1 le visite al prodotto identificato da $item['id']
+// $redis->XXX('popular', 1, $item['id']);
+
+// Recuperiamo lo score assegnato all'item.id (trovare il comando opportuno)
+// $item['visite'] = $redis->XXX('popular', $item['id']);
 $data = json_encode($item, true);
+
+// Aggiorniamo il prodotto in cache, con il nuovo numero di visite...
 $redis->set($id_prodotto, $data) or die ("Failed to save data at the server");
 
 ?>

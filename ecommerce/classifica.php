@@ -35,12 +35,15 @@ try {
 
 	$start = microtime(true);
 
-	$result = $redis->zRevRange('popular', 0, 14);	
+	// Sostituire XXX con la chiamata che ci restituisce i 14 prodotti (o meglio loro ID) con più visite
+	$result = $redis->XXX('popular', 0, 14);	
 
         // Passa uno a uno i risultati
         foreach($result as $item){
 
-		$redisItem = $redis->get($item);
+		// Sostituire YYY con la chiamata a Redis per restituirci il prodotto 
+                // così come salvato alla chiave restituita dalla chiave di cui sopra (KEY)
+		$redisItem = $redis->YYY(KEY);
 		$row = json_decode($redisItem, true);
 
 	?>
