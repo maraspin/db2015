@@ -1,5 +1,14 @@
 <?php
 include_once 'config.inc.php';
+
+require 'predis/autoload.php';
+Predis\Autoloader::register();
+
+$redis = new Predis\Client();  
+
+
+try {
+
 ?>
 <html>
 <head>
@@ -9,7 +18,7 @@ include_once 'config.inc.php';
 	<h1>SQL E-Commerce</h1>
 	<h2>Elenco Prodotti</h2>
 	<div style="float:right;height:24;margin-bottom:34;font-size:24px;margin-right:14px">
-	<a href="./classifica.php">Prodotti Pi&ugrave; Venduti</a>
+		<a href="/">Ritorna alla Home</a>
 	</div>
 	<table id="products">
 	<thead>
@@ -19,30 +28,20 @@ include_once 'config.inc.php';
 		<td>Data Arrivo</td>
 		<td>Categoria</td>
 		<td>Macrocategoria</td>
+		<td>Visite</td>
 		<td style="width: 140px">Azioni</td>
 	</thead>
 	<?php
-	try {
-	
-	$db = new PDO($dsn , $username, $password);
-	$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-	$sql = 'SELECT prodotti.id, prodotti.nome, prodotti.prezzo, prodotti.dataarrivo, categorie.nome as cat, macrocategorie.nome as macrocat '.
-               'FROM PRODOTTI '.
-               'JOIN categorie on categorie.id = prodotti.categoria_id '.
-               'JOIN macrocategorie on macrocategorie.id = categorie.macrocategoria_id '.
-               'ORDER BY dataarrivo DESC, macrocat ASC, cat ASC LIMIT 25';
 
 	$start = microtime(true);
 
-        // Esegue la Query
-        $stmt = $db->query($sql);
-
-        // Recupera tutti i risultati (fetchAll)
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	$result = $redis->zRevRange('popular', 0, 14);	
 
         // Passa uno a uno i risultati
-        foreach($result as $row){
+        foreach($result as $item){
+
+		$redisItem = $redis->get($item);
+		$row = json_decode($redisItem, true);
 
 	?>
 	<tr>
@@ -52,6 +51,7 @@ include_once 'config.inc.php';
 		<td><?php echo substr($row['dataarrivo'],0,16); ?> </td>
 		<td><?php echo $row['cat']; ?> </td>
 		<td><?php echo $row['macrocat']; ?> </td>
+		<td><?php echo $row['visite']; ?> </td>
 		<td><a href="./dettaglio.php?id=<?php echo $row['id']; ?>">Scheda</a></td>
 	</tr>
 	<?php

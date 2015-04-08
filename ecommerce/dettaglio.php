@@ -19,8 +19,6 @@ $start = microtime(true);
 if (!$redis->exists($id_prodotto)) {
   echo "Not cached<br />";
 
-  // Query di aggiornamento (UPDATE) delle visite
-
   // Query di selezione, per il prodotto e le relative varianti
   $sql = 'SELECT prodotti.id, prodotti.nome, prodotti.descrizione, prodotti.prezzo, prodotti.dataarrivo, prodotti.visite, varianti.nome as variante '.
        'FROM PRODOTTI JOIN prodottivarianti on prodotti.id = prodottivarianti.prodotto_id '.
@@ -30,7 +28,7 @@ if (!$redis->exists($id_prodotto)) {
   $stmt = $db->query($sql);
 
   // Viene recuperato il primo record, con le informazioni del prodotto
-  $row = $stmt->fetch();
+  $row = $stmt->fetch(PDO::FETCH_ASSOC);
   $item = $row;
 
   // Vengono recuperate le varianti
@@ -51,8 +49,12 @@ if (!$redis->exists($id_prodotto)) {
 // Qui utilizziamo pattern pub/sub per comunicare a chi è in ascolto cosa sta succedendo...
 $redis->publish("visitatori", "qualcuno sta guardando l'oggetto ". $item['nome']);
 
-// Come comunichiamo alla nostra coda "magazzino" (in ascolto via node) il nome del prodotto visualizzato?
-// $redis->???("magazzino", $item['nome']);
+// Qui utilizziamo un sorted set di Redis per aggiornare le visite di questo prodotto in classifica
+
+$redis->zincrby('popular', 1, $item['id']);
+$item['visite'] = $redis->zscore('popular', $item['id']);
+$data = json_encode($item, true);
+$redis->set($id_prodotto, $data) or die ("Failed to save data at the server");
 
 ?>
 <html>

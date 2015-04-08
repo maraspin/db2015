@@ -9,8 +9,8 @@ include_once 'config.inc.php';
 	<h1>SQL E-Commerce</h1>
 	<h2>Elenco Prodotti</h2>
 	<div style="float:right;height:24;margin-bottom:34;font-size:24px;margin-right:14px">
-	<a href="./classifica.php">Prodotti Pi&ugrave; Venduti</a>
-	</div>
+                <a href="/">Ritorna alla Home</a>
+        </div>
 	<table id="products">
 	<thead>
 		<td>ID</td>
@@ -19,6 +19,7 @@ include_once 'config.inc.php';
 		<td>Data Arrivo</td>
 		<td>Categoria</td>
 		<td>Macrocategoria</td>
+		<td>Visite</td>
 		<td style="width: 140px">Azioni</td>
 	</thead>
 	<?php
@@ -27,11 +28,11 @@ include_once 'config.inc.php';
 	$db = new PDO($dsn , $username, $password);
 	$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-	$sql = 'SELECT prodotti.id, prodotti.nome, prodotti.prezzo, prodotti.dataarrivo, categorie.nome as cat, macrocategorie.nome as macrocat '.
+	$sql = 'SELECT prodotti.id, prodotti.nome, prodotti.prezzo, prodotti.dataarrivo, categorie.nome as cat, prodotti.visite as visite, macrocategorie.nome as macrocat '.
                'FROM PRODOTTI '.
                'JOIN categorie on categorie.id = prodotti.categoria_id '.
                'JOIN macrocategorie on macrocategorie.id = categorie.macrocategoria_id '.
-               'ORDER BY dataarrivo DESC, macrocat ASC, cat ASC LIMIT 25';
+               'ORDER BY visite DESC LIMIT 14';
 
 	$start = microtime(true);
 
@@ -52,6 +53,7 @@ include_once 'config.inc.php';
 		<td><?php echo substr($row['dataarrivo'],0,16); ?> </td>
 		<td><?php echo $row['cat']; ?> </td>
 		<td><?php echo $row['macrocat']; ?> </td>
+		<td><?php echo $row['visite']; ?> </td>
 		<td><a href="./dettaglio.php?id=<?php echo $row['id']; ?>">Scheda</a></td>
 	</tr>
 	<?php
